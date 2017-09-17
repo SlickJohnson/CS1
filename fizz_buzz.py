@@ -7,4 +7,5 @@ def fizz_buzz(start=1, end=100):
         elif i % 5 == 0:
             print("buzz")
 
+
 fizz_buzz()

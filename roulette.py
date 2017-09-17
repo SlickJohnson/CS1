@@ -1,7 +1,3 @@
-'''Build a working roulette game.  At minimum, this script should
-Complete one round of roulette - but if you're up to the challenge,
-feel free to build a full command line interface through which '''
-
 import random
 random.seed(1)
 
@@ -20,28 +16,31 @@ def take_bet(color, number, amount):
     bet_number = number
     bet_amount = amount
 
+    return [bet_color, bet_number, bet_amount]
+
 
 def roll_ball():
     '''returns a random number between 0 and 37'''
-    return random.randint
+
+    return random.randint(0, 38)
 
 
-def check_results(ball_roll):
+def check_results(ball_roll, bet_info):
     '''Compares bet_color to color rolled.  Compares
     bet_number to number_rolled.'''
-    if ball_roll == bet_number:
-        pass
 
-def payout(did_win):
+    print("The ball number is " + str(bet_info[2]) + "...\n")
+    payout(ball_roll == bet_info[2], bet_info)
+
+
+def payout(did_win, bet_info):
     '''returns total amount won or lost by user based on results of roll. '''
 
     if did_win:
-        global bank_account
+        print("YOU WON! Your now have $", str(bank_account + bet_info[2]))
 
-        bank_account += bet_amount
-        print("YOU WON! Your bank account is now $", bank_account)
     else:
-        pass
+        print("YOU LOST!!! HAHAHA! You now have $", str(bank_account - bet_info[2]))
 
 
 def play_game():
@@ -54,9 +53,23 @@ def play_game():
     Determine if the user won or lost.
     Pay or deduct money from the user accordingly.
     """
-    take_bet(input("Choose color\n"), input("Choose number\n"), input("Bet amount?\n"))
-    ball = roll_ball()
-    check_results(ball)
+    color = input("Choose color\n")
+    number = 0
 
-bet_amount = 50
-payout(True)
+    if color == "green":
+        number = input("Choose a number from this list: " + str(green) + "\n")
+
+    elif color == "red":
+        number = input("Choose a number from this list: " + str(red) + "\n")
+
+    elif color == "black":
+        number = input("Choose a number from this list: " + str(black) + "\n")
+
+    else:
+        print("Whoops! That's not a color supported by this game. Try again..")
+        play_game()
+
+    check_results(roll_ball(), take_bet(color, int(number), int(input("Bet amount?\n"))))
+
+
+play_game()
