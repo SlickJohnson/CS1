@@ -10,6 +10,9 @@ Track user guess/append latest guess
 
 import random
 import os
+from bs4 import BeautifulSoup
+import requests
+import re
 
 HEAD = "  O"
 BODY = "X"
@@ -81,24 +84,53 @@ class Player:
             self.is_player_dead = True
 
 
-def load_word():
+def scrape_page(url):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+
+    scraped_word_list = clean_scraped_text(soup)
+
+    return scraped_word_list
+
+
+def scrape_all_pages(url):
+    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    scraped_word_list = []
+
+    for link in soup.find_all('a'):
+        link_url = link.get('href')
+
+        if link_url is not None:
+            clear()
+            if "http" not in link_url and "@" not in link_url and "https" not in link_url:
+                print("Scraping..." + link_url)
+                scraped_word_list.extend(scrape_page(url + link.get('href')))
+
+    return scraped_word_list
+
+
+def clean_scraped_text(soup):
+    [s.extract() for s in soup('script')]
+
+    text = re.sub(r'[^A-Za-z]', ' ', soup.text)
+    text = re.sub(' +', ' ', text)
+
+    word_list = text.split(" ")
+    text = [s for s in word_list if len(s) > 4]
+
+    return text
+
+
+def load_word(url):
     """Retrieves random word from word list"""
+    secret_word = random.choice(scrape_all_pages(url))
 
-    file = open("hangman_words.txt", "r")
-    world_list = file.readline()
-    file.close()
-
-    world_list = world_list.split(" ")
-    secret_word = random.choice(world_list)
-
-    return secret_word
+    return secret_word.lower()
 
 
 def update(secret_word, message_to_player):
     """Prints game information"""
 
     clear()
-
     if is_word_guessed(secret_word):
         game_won()
 
@@ -118,13 +150,15 @@ def update(secret_word, message_to_player):
 def check_guess(guess, secret_word):
     """Check to see if player guessed the right word or letter"""
 
-    message_to_player = ""
-    if len(guess) == len(secret_word) and guess == secret_word:
-        message_to_player = "YOU GUESSED THE WORD. IT WAS " + secret_word
+    if guess == "" or len(guess) > 1 and len(guess) != len(secret_word) or guess.isdigit():
+        message_to_player = "YOU MUST INPUT A LETTER OR GUESS THE ENTIRE WORD."
+
+    elif len(guess) == len(secret_word) and guess == secret_word:
+        message_to_player = "YOU GUESSED THE WORD. IT WAS " + secret_word + "."
         game_won()
 
     elif secret_word != "" and guess in secret_word:
-        message_to_player = "THAT LETTER IS IN THE WORD"
+        message_to_player = "THAT LETTER IS IN THE WORD! GOOD GUESS!!"
         player.letters_guessed.append(guess)
 
     elif guess not in player.letters_guessed:
@@ -168,7 +202,7 @@ def new_game():
     hint = []
     player = Player()
 
-    hangman(load_word())
+    hangman(load_word("https://www.makeschool.com"))
 
 
 def hangman(secret_word):
@@ -183,7 +217,9 @@ def hangman(secret_word):
     ask_for_guess(secret_word)
 
 
-clear = lambda: os.system('clear')
+def clear():
+    os.system('clear')
+
 
 hint = []
 player = Player()
