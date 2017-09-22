@@ -105,8 +105,8 @@ def update(secret_word, message_to_player):
     elif not player.is_player_dead:
         print(TITLE, "\n\n")
         player.update()
+        print(player_word_progress(secret_word), "\n\n")
         print(message_to_player)
-        print(player_word_progress(secret_word))
         ask_for_guess(secret_word)
 
     else:
@@ -124,11 +124,11 @@ def check_guess(guess, secret_word):
         game_won()
 
     elif secret_word != "" and guess in secret_word:
-        message_to_player = "THAT LETTER IS IN THE WORD\n\n"
+        message_to_player = "THAT LETTER IS IN THE WORD"
         player.letters_guessed.append(guess)
 
     elif guess not in player.letters_guessed:
-        message_to_player = "WRONG! TRY AGAIN!\n\n"
+        message_to_player = "WRONG! TRY AGAIN!"
 
         player.add_body_part()
         player.letters_guessed.append(guess)
@@ -136,7 +136,7 @@ def check_guess(guess, secret_word):
     else:
         message_to_player = "YOU ALREADY GUESSED THAT LETTER!!!\n\n"
 
-    update(secret_word, message_to_player + "Letters guessed:\n\t" + str(player.letters_guessed) + "\n\n")
+    update(secret_word, "Letters guessed:\n\t" + str(player.letters_guessed) + "\n\n" + message_to_player)
 
 
 def player_word_progress(secret_word):
@@ -145,7 +145,7 @@ def player_word_progress(secret_word):
 
 def ask_for_guess(secret_word):
     # print("the 'Secret' word is", secret_word, ". Shhh ;)")
-    guess = input("\n\nGuess the word or a letter:\n").lower()
+    guess = input("Guess the word or a letter:\n").lower()
 
     check_guess(guess, secret_word)
 
@@ -177,6 +177,8 @@ def hangman(secret_word):
     input("Press ENTER to start")
     clear()
     print(TITLE, "\n\n")
+    player.update()
+
     print(player_word_progress(secret_word))
     ask_for_guess(secret_word)
 
